@@ -1,0 +1,3 @@
+##so para lembrar do bibliometrix
+require(bibliometrix)
+biblioshiny()

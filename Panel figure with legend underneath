@@ -1,0 +1,20 @@
+m <- matrix(c(1:5,5), nrow = 3, ncol = 2, byrow = TRUE)
+m # note que o 5 foi repetido, o grafico eh feito seguindo a sequencia de numeros
+layout(m, widths = c(1,1),
+       heights = c(1,1,0.5)) # aqui defini as dimensoes de cada area
+par(mar=c(3,5,1,1)) # mudar margem
+plot(1:10)
+plot(1:10)
+par(mar=c(5,5,1,1))
+plot(1:10)
+plot(1:10)
+par(mar=c(0,0,0,0))
+plot(1:10, 
+     xlab = "", ylab = "",
+     xaxt = "n", yaxt = "n",
+     type = "n", bty = "n") # grafico vazio
+legend("center",
+       legend = c("l1", "l2"),
+       pch = c(15, 18),
+       bty = "n", 
+       ncol = 2)

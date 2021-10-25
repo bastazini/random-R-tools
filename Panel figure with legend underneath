@@ -1,3 +1,4 @@
+##creating plots
 m <- matrix(c(1:5,5), nrow = 3, ncol = 2, byrow = TRUE)
 m # note que o 5 foi repetido, o grafico eh feito seguindo a sequencia de numeros
 layout(m, widths = c(1,1),
@@ -13,6 +14,7 @@ plot(1:10,
      xlab = "", ylab = "",
      xaxt = "n", yaxt = "n",
      type = "n", bty = "n") # grafico vazio
+##placing legend box
 legend("center",
        legend = c("l1", "l2"),
        pch = c(15, 18),

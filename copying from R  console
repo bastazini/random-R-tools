@@ -1,5 +1,0 @@
-###just a random function to copy vector, matrices from R console
-
-copy= function(x = .Last.value) {
-  clipr::write_clip(x)
-}

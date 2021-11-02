@@ -1,0 +1,9 @@
+###just a random functions to copy/paste vector, matrices from/to R console that I always forget about
+
+##Copying from R console
+copy= function(x = .Last.value) {
+  clipr::write_clip(x)
+}
+
+#####pasting from excell in R
+dados=read.table(pipe("pbpaste"), sep="\t", header=T);dados

@@ -1,0 +1,25 @@
+### just a simple example to read multiple networks and analyze them
+###pacotes
+install.packages("devetools")
+require(devtools)
+install_github("FMestre1/fw_package")
+ require(fw)
+
+### Importando arquivos
+## aqui salvei todas as matrizes, como csv numa pasta
+##os separadores das celulas são ;, mas pode ser outra coisa
+### Importa os dados informa o R qual o ficheiro que estas trabalhando. todos os csv tem que estar neste ficheiro
+temp = list.files(pattern="*.csv")
+minhas.redes = lapply(temp, read.delim,sep=";",row.names=1)
+## O objeto minhas.redes ai ser uma lista  como todas tuas redes
+
+### esta é uma funçao do do pacote fw que calcula varias metricas de redes
+#o objeto mertic vai ter estas metricas calculadas para cada rede
+metricas = fw.metrics(minhas.redes);metricas
+
+###se quiseres usar as metricas do bipartite usando a função networklevel
+##esta mesma logica,usando lapply deveria servir para quase todas as outras opçoes do bipartite,  só especifica a funçao no argumento FUN
+metricas2=lapply(FUN=networklevel,minhas.redes);metricas2
+
+## Plotar a distribuição do grau de cada rede 
+dd.fw(minhas.redes, log=TRUE, cumulative=TRUE)

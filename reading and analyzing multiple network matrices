@@ -1,4 +1,4 @@
-### just a simple example to read multiple networks and analyze them
+### Um exemplo de como ler mlutiplos arquivos csv para análise de redes.
 ###pacotes
 install.packages("devetools")
 require(devtools)
@@ -7,7 +7,7 @@ install_github("FMestre1/fw_package")
 
 ### Importando arquivos
 ## aqui salvei todas as matrizes, como csv numa pasta
-##os separadores das celulas são ;, mas pode ser outra coisa
+##os separadores das celulas são ;, mas pode ser outra coisa. Os nomes das especies estão nos cabeçalhos das colunas e nas linhas da primeira coluna
 ### Importa os dados informa o R qual o ficheiro que estas trabalhando. todos os csv tem que estar neste ficheiro
 temp = list.files(pattern="*.csv")
 minhas.redes = lapply(temp, read.delim,sep=";",row.names=1)

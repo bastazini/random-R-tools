@@ -17,8 +17,14 @@ impact=ggplot() +
   theme(legend.position="none")+ 
   coord_equal()
 
+int=ggplot() + 
+  geom_polygon(data = dat.gg, aes(x, y, group = id, fill=id), colour = "black", alpha = 0.8) +
+  scale_fill_viridis() +
+  geom_text(data = data, aes(x, y, size=Freq, label = dados), color="black") +
+  theme_void() + 
+  theme(legend.position="none")+ 
+  coord_equal()
 
-install.packages("cowplot")
 ggarrange(int, impact + rremove("x.text"), 
           labels = c("A", "B"),
           ncol = 2, nrow = 1)

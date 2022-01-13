@@ -1,14 +1,14 @@
 require(packcircles)
 require(ggpubr)
 require(ggplot2)
-require(viridis)
-dados=read.table(pipe("pbpaste"), sep="\t", header=T);dados
+library(viridis)
+dados=read.table(pipe("pbpaste"), sep="\t", header=F);dados
 data=table(dados);data
 data=as.data.frame(data)
-packing =circleProgressiveLayout(data$Freq, sizetype='area')
-packing$radius = 0.95*packing$radius
-data = cbind(data, packing)
-dat.gg = circleLayoutVertices(packing, npoints=50)
+packing <- circleProgressiveLayout(data$Freq, sizetype='area')
+packing$radius <- 0.95*packing$radius
+data <- cbind(data, packing)
+dat.gg <- circleLayoutVertices(packing, npoints=50)
 
 # Plot 
 impact=ggplot() + 

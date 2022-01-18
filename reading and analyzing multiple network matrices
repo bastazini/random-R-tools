@@ -16,8 +16,9 @@ minhas.redes = lapply(temp, read.delim,sep=";",row.names=1)
 ### esta é uma funçao do do pacote fw que calcula varias metricas de redes
 #o objeto mertic vai ter estas metricas calculadas para cada rede
 metricas = fw.metrics(minhas.redes);metricas
-###Bixando pelo fw
-metrics <- fw.metrics(mg1)
+###Baixando pelo fw
+redes= create.fw.list(db="mg", ref=TRUE, spatial = TRUE)
+metrics = fw.metrics(redes)
 
 ###se quiseres usar as metricas do bipartite usando a função networklevel
 ##esta mesma logica,usando lapply deveria servir para quase todas as outras opçoes do bipartite,  só especifica a funçao no argumento FUN

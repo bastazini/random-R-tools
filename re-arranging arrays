@@ -1,0 +1,19 @@
+#data
+data <- array(1:60, dim = c(5 , 4, 3))
+dim(data)
+
+nD1 <- 5 # si
+nD2 <- 4 # oc
+nD3 <- 3 # sp
+
+#re-arranging arrays
+new.data <- array(NA, dim = c(nD3 , nD1, nD2))
+for(i in 1:nD1){
+	for(j in 1:nD2){
+		for(k in 1:nD3){
+			new.data[k, i, j] <- data[i, j, k]
+		}
+	}
+}
+
+new.data

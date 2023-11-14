@@ -1,0 +1,9 @@
+require(pdftools)
+
+
+
+pdf_combine(c("capitulo_1.pdf", 
+              "capitulo_2", 
+              "capitulo_3.pdf",
+              "etc.pdf")
+            , output = "book.pdf")

@@ -1,0 +1,158 @@
+library(shiny)
+
+# Define UI
+ui <- fluidPage(
+  titlePanel("Cash Drawer App"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("product", "Select Product", choices = list(
+        "Blonde" = "Blonde",
+        "IPA" = "IPA",
+        "Triple" = "Triple",
+        "Summer" = "Summer",
+        "Rosé" = "Rosé",
+        "Coca" = "Coca",
+        "Coca zero" = "Coca zero",
+        "SPA fruit" = "SPA fruit",
+        "SPA eau pet" = "SPA eau pet",
+        "Cafe" = "Cafe"
+      )),
+      numericInput("quantity", "Quantity", value = 1, min = 1),
+      actionButton("add", "Add to Cart"),
+      hr(),
+      h3("Cart"),
+      tableOutput("cart"),
+      hr(),
+      h3("Total Price"),
+      textOutput("total")
+    ),
+    mainPanel(
+      h3("Cash Transaction"),
+      numericInput("cash", "Cash Given", value = 0, min = 0),
+      actionButton("calculate", "Calculate Change"),
+      h3("Change"),
+      textOutput("change"),
+      hr(),
+      h3("Sales Report"),
+      actionButton("generate_report", "Generate Report"),
+      tableOutput("sales_report"),
+      downloadButton("download_report", "Download Report as Text File")
+    )
+  )
+)
+
+# Define server logic
+server <- function(input, output, session) {
+  products <- reactiveValues(
+    items = data.frame(
+      Product = character(),
+      Quantity = integer(),
+      Price = numeric(),
+      stringsAsFactors = FALSE
+    ),
+    sales = data.frame(
+      Product = character(),
+      Quantity = integer(),
+      Revenue = numeric(),
+      stringsAsFactors = FALSE
+    ),
+    prices = c(
+      Blonde = 3, IPA = 3, Triple = 3, Summer = 3,
+      Rosé = 2, Coca = 1, Coca_zero = 1, SPA_fruit = 1,
+      SPA_eau_pet = 1, Cafe = 1
+    )
+  )
+  
+  observeEvent(input$add, {
+    req(input$product, input$quantity)
+    product_name <- input$product
+    product_price <- products$prices[[gsub(" ", "_", product_name)]]
+    
+    new_item <- data.frame(
+      Product = product_name,
+      Quantity = input$quantity,
+      Price = product_price * input$quantity,
+      stringsAsFactors = FALSE
+    )
+    
+    products$items <- rbind(products$items, new_item)
+  })
+  
+  output$cart <- renderTable({
+    products$items
+  })
+  
+  output$total <- renderText({
+    total_price <- sum(products$items$Price)
+    paste("Total Price: $", total_price)
+  })
+  
+  observeEvent(input$calculate, {
+    total_price <- sum(products$items$Price)
+    change <- input$cash - total_price
+    output$change <- renderText({
+      if (change < 0) {
+        "Insufficient Cash"
+      } else {
+        paste("Change: $", change)
+      }
+    })
+    
+    # Update sales report
+    for (i in 1:nrow(products$items)) {
+      product <- products$items$Product[i]
+      quantity <- products$items$Quantity[i]
+      revenue <- products$items$Price[i]
+      
+      existing <- which(products$sales$Product == product)
+      if (length(existing) == 0) {
+        new_sale <- data.frame(
+          Product = product,
+          Quantity = quantity,
+          Revenue = revenue,
+          stringsAsFactors = FALSE
+        )
+        products$sales <- rbind(products$sales, new_sale)
+      } else {
+        products$sales$Quantity[existing] <- products$sales$Quantity[existing] + quantity
+        products$sales$Revenue[existing] <- products$sales$Revenue[existing] + revenue
+      }
+    }
+    
+    # Clear the cart
+    products$items <- data.frame(
+      Product = character(),
+      Quantity = integer(),
+      Price = numeric(),
+      stringsAsFactors = FALSE
+    )
+  })
+  
+  observeEvent(input$generate_report, {
+    output$sales_report <- renderTable({
+      products$sales
+    })
+  })
+  
+  output$download_report <- downloadHandler(
+    filename = function() {
+      paste("sales_report", Sys.Date(), ".txt", sep = "")
+    },
+    content = function(file) {
+      sales_data <- products$sales
+      writeLines(
+        c(
+          "Sales Report",
+          paste("Date:", Sys.Date()),
+          "",
+          "Product\tQuantity\tRevenue",
+          paste(sales_data$Product, sales_data$Quantity, sales_data$Revenue, sep = "\t")
+        ),
+        con = file
+      )
+    }
+  )
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)

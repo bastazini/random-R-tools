@@ -1,0 +1,119 @@
+# Install and Load Required Packages
+if(!require(scholar)) {
+  install.packages("scholar")
+}
+if(!require(dplyr)) {
+  install.packages("dplyr")
+}
+if(!require(ggplot2)) {
+  install.packages("ggplot2")
+}
+
+library(scholar)
+library(dplyr)
+library(ggplot2)
+
+# Define Function to Get Researcher Data
+get_researcher_data <- function(scholar_id) {
+  tryCatch({
+    # Retrieve profile and publication data
+    profile <- get_profile(scholar_id)
+    pubs <- get_publications(scholar_id)
+    
+    if (is.null(profile) || is.null(pubs) || nrow(pubs) == 0) {
+      stop("No data found for this Google Scholar ID.")
+    }
+    
+    # Total number of journal articles
+    total_papers <- nrow(pubs)
+    
+    # Total number of citations
+    total_citations <- sum(pubs$cites, na.rm = TRUE)
+    
+    # H-index
+    h_index <- profile$h_index
+    
+    # Coauthor counting
+    total_coauthors <- sum(sapply(pubs$author, function(authors) {
+      length(strsplit(authors, ",")[[1]])
+    })) - total_papers  # Subtract total journal articles to exclude self
+    
+    # First author papers
+    first_author_papers <- sum(sapply(pubs$author, function(authors) {
+      grepl(profile$name, trimws(strsplit(authors, ",")[[1]][1]), ignore.case = TRUE)
+    }))
+    
+    # Last author papers (assuming profile name is the last author)
+    senior_author_papers <- sum(sapply(pubs$author, function(authors) {
+      grepl(profile$name, trimws(tail(strsplit(authors, ",")[[1]], 1)), ignore.case = TRUE)
+    }))
+    
+    # Research diversity index (number of distinct journals)
+    research_diversity <- length(unique(pubs$journal))
+    
+    # Create result list
+    result <- list(
+      Total_Papers = total_papers,
+      Total_Citations = total_citations,
+      H_Index = h_index,
+      Total_Coauthors = total_coauthors,
+      First_Author_Papers = first_author_papers,
+      Senior_Author_Papers = senior_author_papers,
+      Research_Diversity = research_diversity
+    )
+    
+    return(result)
+  }, error = function(e) {
+    message(paste("Error retrieving data for Google Scholar ID:", scholar_id))
+    message(e)
+    return(NULL)
+  })
+}
+
+# Function to Calculate Metrics for Multiple Profiles
+calculate_metrics_for_profiles <- function(scholar_ids) {
+  metrics_list <- lapply(scholar_ids, get_researcher_data)
+  metrics_list <- metrics_list[!sapply(metrics_list, is.null)]  # Remove NULL entries
+  metrics_df <- do.call(rbind, lapply(metrics_list, as.data.frame))
+  return(metrics_df)
+}
+
+# Function to Plot Density Distributions and Calculate Percentiles
+plot_density_and_percentiles <- function(metrics_df, your_metrics, metric_name) {
+  ggplot(metrics_df, aes_string(x = metric_name)) +
+    geom_density(fill = "blue", alpha = 0.5) +
+    geom_vline(aes(xintercept = your_metrics[[metric_name]]), color = "red", linetype = "dashed", size = 1) +
+    labs(title = paste("Density Distribution of", metric_name),
+         x = metric_name, y = "Density") +
+    theme_minimal()
+}
+
+# Function to Calculate Percentile
+calculate_percentile <- function(metrics_df, your_metrics, metric_name) {
+  metric_values <- metrics_df[[metric_name]]
+  your_value <- your_metrics[[metric_name]]
+  percentile <- sum(metric_values <= your_value) / length(metric_values) * 100
+  return(percentile)
+}
+
+scholar_ids <- c()  # Replace with actual Google Scholar IDs
+
+
+your_scholar_id <- ""# Replace with your actual Google Scholar IDs
+
+
+# Calculate metrics for all profiles
+metrics_df <- calculate_metrics_for_profiles(scholar_ids)
+
+# Retrieve your own metrics
+your_metrics <- get_researcher_data(your_scholar_id)
+
+# Plot density distributions and calculate percentiles for each metric
+metrics <- c("Total_Papers", "Total_Citations", "H_Index", "Total_Coauthors", "First_Author_Papers", "Senior_Author_Papers", "Research_Diversity")
+for (metric in metrics) {
+  plot <- plot_density_and_percentiles(metrics_df, your_metrics, metric)
+  print(plot)
+  percentile <- calculate_percentile(metrics_df, your_metrics, metric)
+  print(paste("Your percentile for", metric, ":", percentile))
+}
+

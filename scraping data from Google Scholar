@@ -1,4 +1,6 @@
-# Install and Load Required Packages
+rm(list=ls())
+
+#  Packages
 if (!require(scholar)) {
   install.packages("scholar")
 }
@@ -12,15 +14,15 @@ if (!require(gridExtra)) {
   install.packages("gridExtra")
 }
 
+
 library(scholar)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
 
-# Define Function to Get Researcher Data
+# Getting Researcher Data
 get_researcher_data <- function(scholar_id) {
   tryCatch({
-    # Retrieve profile and publication data
     profile <- get_profile(scholar_id)
     pubs <- get_publications(scholar_id)
     
@@ -56,10 +58,10 @@ get_researcher_data <- function(scholar_id) {
       grepl(profile$name, last_author, ignore.case = TRUE)
     }))
     
-    # Research diversity index (number of distinct journals)
+    # Research diversity index (i.e., number of distinct journals)
     research_diversity <- length(unique(pubs$journal))
     
-    # Create result list
+    # Create a list with the results
     result <- list(
       Scholar_ID = scholar_id,
       Total_Papers = total_papers,
@@ -79,15 +81,15 @@ get_researcher_data <- function(scholar_id) {
   })
 }
 
-# Function to Calculate Metrics for Multiple Profiles
+# Calculate Metrics for Multiple Profiles
 calculate_metrics_for_profiles <- function(scholar_ids) {
   metrics_list <- lapply(scholar_ids, get_researcher_data)
-  metrics_list <- metrics_list[!sapply(metrics_list, is.null)]  # Remove NULL entries
+  metrics_list <- metrics_list[!sapply(metrics_list, is.null)]  # Removing NULL entries
   metrics_df <- do.call(rbind, lapply(metrics_list, as.data.frame))
   return(metrics_df)
 }
 
-# Function to Plot Density Distributions and Calculate Percentiles
+# Plot empirical Density Distributions 
 plot_density_and_percentiles <- function(metrics_df, your_metrics, metric_name) {
   p <- ggplot(metrics_df, aes_string(x = metric_name)) +
     geom_density(fill = "blue", alpha = 0.5) +
@@ -98,7 +100,7 @@ plot_density_and_percentiles <- function(metrics_df, your_metrics, metric_name) 
   return(p)
 }
 
-# Function to Calculate Percentile
+# Calculate Percentile
 calculate_percentile <- function(metrics_df, your_metrics, metric_name) {
   metric_values <- metrics_df[[metric_name]]
   your_value <- your_metrics[[metric_name]]
@@ -106,26 +108,25 @@ calculate_percentile <- function(metrics_df, your_metrics, metric_name) {
   return(percentile)
 }
 
-# Scholar IDs to Analyze
+# Scholar IDs
 scholar_ids <- c("")
-)
 
-your_scholar_id <- ""
+my_scholar_id <- ""
 
 # Calculate metrics for all profiles
 metrics_df <- calculate_metrics_for_profiles(scholar_ids)
 
 # Retrieve your own metrics
-your_metrics <- get_researcher_data(your_scholar_id);your_metrics
+my_metrics <- get_researcher_data(my_scholar_id);my_metrics
 
 # Plot density distributions and calculate percentiles for each metric
 metrics <- c("Total_Papers", "Total_Citations", "H_Index", "Total_Coauthors", "First_Author_Papers", "Senior_Author_Papers", "Research_Diversity")
 plots <- list()
 
 for (metric in metrics) {
-  plot <- plot_density_and_percentiles(metrics_df, your_metrics, metric)
+  plot <- plot_density_and_percentiles(metrics_df, my_metrics, metric)
   plots[[metric]] <- plot
-  percentile <- calculate_percentile(metrics_df, your_metrics, metric)
+  percentile <- calculate_percentile(metrics_df, my_metrics, metric)
   print(paste("Your percentile for", metric, ":", percentile))
 }
 
